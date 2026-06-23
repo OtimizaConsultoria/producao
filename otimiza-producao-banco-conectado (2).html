@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Otimiza · Produção</title>
+<style>
+:root {
+  --verde:#1D9E75; --verde-escuro:#0F6E56; --verde-claro:#E1F5EE;
+  --laranja:#EF9F27; --laranja-claro:#FAEEDA; --vermelho:#E24B4A; --vermelho-claro:#FCEBEB;
+  --azul:#378ADD; --azul-claro:#E6F1FB; --bg:#f8f7f4; --card:#fff; --text:#2C2C2A; --muted:#6b6a65;
+  --border:rgba(0,0,0,.10); --cinza:#F1EFE8; --radius:14px;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:var(--text);font-size:14px}
+#app{display:flex;min-height:100vh} aside{width:220px;background:var(--verde-escuro);color:#fff;padding:22px 14px;position:fixed;inset:0 auto 0 0}
+.logo{font-weight:800;font-size:18px;padding:4px 8px 18px;border-bottom:1px solid rgba(255,255,255,.16);margin-bottom:16px} .logo span{font-weight:400;opacity:.65;font-size:13px}
+nav{display:flex;flex-direction:column;gap:6px} nav button{border:0;background:transparent;color:rgba(255,255,255,.75);text-align:left;padding:12px 14px;border-radius:9px;cursor:pointer;font-weight:600}
+nav button:hover,nav button.active{background:rgba(255,255,255,.16);color:#fff} main{margin-left:220px;flex:1;padding:22px;max-width:1500px}
+.mobile-top{display:none;background:var(--verde-escuro);color:#fff;padding:12px 16px;align-items:center;justify-content:space-between} .hamb{background:transparent;border:0;color:#fff;font-size:24px}
+h1{margin:0 0 5px;font-size:25px;color:var(--verde-escuro)} .sub{color:var(--muted);margin-bottom:16px;font-size:13px}
+.btn{border:1px solid var(--border);background:#fff;border-radius:9px;padding:8px 12px;cursor:pointer;font-weight:650;color:var(--text)} .btn:hover{background:var(--cinza)} .btn.primary{background:var(--verde);color:#fff;border-color:var(--verde)} .btn.danger{color:var(--vermelho);border-color:#f1b8b8;background:#fff}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0} .spacer{flex:1}
+.choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px} .choice{background:#fff;border:1px solid var(--border);border-radius:16px;padding:22px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.04)} .choice:hover{border-color:var(--verde);transform:translateY(-1px)} .choice h2{margin:0 0 8px;color:var(--verde-escuro)}
+.week{display:grid;grid-template-columns:repeat(7,minmax(170px,1fr));gap:10px;overflow-x:auto;padding-bottom:8px} .day{background:var(--cinza);border:1px solid var(--border);border-radius:16px;padding:10px;min-height:520px;display:flex;flex-direction:column} .day-head{display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--verde-escuro);font-size:13px;margin-bottom:8px} .day-head small{color:var(--muted);font-weight:700} .day-body{flex:1;overflow-y:auto;max-height:560px}
+.plan-card{background:#fff;border:1px solid var(--border);border-left:5px solid var(--verde);border-radius:13px;padding:10px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.04);cursor:grab} .plan-card.doce{border-left-color:#EFA4C8;background:#FFF8FB} .plan-card.salgado{border-left-color:var(--laranja);background:#FFFBF2} .plan-card.rotisseria{border-left-color:var(--verde);background:#F7FFFB}
+.tag{display:inline-block;font-size:10px;text-transform:uppercase;font-weight:900;letter-spacing:.4px;border-radius:999px;padding:3px 7px;margin-bottom:6px} .tag.doce{background:#FBEAF0;color:#993556} .tag.salgado{background:var(--laranja-claro);color:#854F0B} .tag.rotisseria{background:var(--verde-claro);color:var(--verde-escuro)}
+.plan-card label{display:block;font-size:10px;font-weight:900;color:var(--muted);margin:6px 0 3px;text-transform:uppercase} select,input{width:100%;border:1px solid #d7d4ca;border-radius:8px;padding:8px;background:#fff;font-size:12px} .qtd-line{display:flex;gap:6px;align-items:center} .unit{background:var(--verde-claro);border-radius:7px;padding:7px;font-size:11px;color:var(--verde-escuro);font-weight:800;min-width:38px;text-align:center} .card-actions{display:flex;gap:6px;margin-top:8px} .add-day{margin-top:8px;border:1px dashed var(--verde);color:var(--verde-escuro);background:#fff;width:100%;justify-content:center}
+.panel-hero{background:linear-gradient(135deg,#E1F5EE,#fff);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:16px;display:flex;justify-content:space-between;gap:14px;align-items:flex-start} .panel-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px} .mini{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end} .chip{background:#fff;border:1px solid var(--border);border-radius:12px;padding:9px 12px;min-width:90px;text-align:center} .chip strong{display:block;font-size:20px;color:var(--verde-escuro)} .chip span{font-size:11px;color:var(--muted)}
+.panel-cols{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:12px} .list-card{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;min-height:230px} .list-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;font-weight:900;border-bottom:1px solid var(--border)} .list-head.planejados{background:var(--cinza)} .list-head.produzidos{background:var(--verde-claro);color:var(--verde-escuro)} .list-head.pendentes{background:var(--vermelho-claro);color:#A32D2D} .list-head.extras{background:var(--azul-claro);color:#185FA5} .count{background:#fff;border-radius:999px;padding:3px 8px;font-size:12px} .list-body{padding:10px;max-height:540px;overflow:auto} .panel-item{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:8px} .panel-item.alert{border-left:5px solid var(--vermelho)} .panel-title{font-weight:800;margin-bottom:4px} .meta{font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between} .empty{text-align:center;color:var(--muted);padding:28px 8px}
+.table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden} th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left} th{background:var(--cinza);font-size:12px;color:var(--muted);text-transform:uppercase}
+.config-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;max-width:620px}
+@media(max-width:1100px){.panel-cols{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){#app{display:block} aside{display:none;position:fixed;z-index:20;width:100%;height:auto;bottom:auto} aside.open{display:block;top:52px} main{margin-left:0;padding:14px} .mobile-top{display:flex;position:sticky;top:0;z-index:30} .week{grid-template-columns:1fr} .day{min-height:auto} .day-body{max-height:none} .panel-hero{flex-direction:column} .panel-cols{grid-template-columns:1fr}}
+@media print{aside,.mobile-top,.toolbar,.add-day,.card-actions,.panel-actions{display:none!important} main{margin-left:0;padding:0} .week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;overflow:visible} .day{min-height:auto;background:#fff;border:1px solid #999} .day-body{max-height:none;overflow:visible} .plan-card{box-shadow:none;background:#fff!important} select,input{border:0;padding:2px}}
+
+.just-box{margin-top:8px;background:#fff7e8;border:1px solid #f2cf96;border-radius:10px;padding:8px;font-size:12px;color:#6d4308}
+.just-box b{display:block;margin-bottom:3px}
+.just-btn{margin-top:8px;border:1px solid #f2b0b0;background:#fff;color:#b33;font-size:12px;border-radius:8px;padding:6px 8px;cursor:pointer;font-weight:750}
+.just-btn:hover{background:#FCEBEB}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:90;display:flex;align-items:center;justify-content:center;padding:18px}
+.modal-card{background:#fff;border-radius:16px;padding:18px;max-width:460px;width:100%;box-shadow:0 12px 35px rgba(0,0,0,.18)}
+.modal-card h2{margin:0 0 6px;color:var(--verde-escuro)}
+.modal-card .sub{margin-bottom:12px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+
+
+.prod-form-grid{display:grid;grid-template-columns:1fr 150px 110px;gap:10px;align-items:end}
+.prod-form-grid label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin-bottom:4px}
+.prod-form-grid input,.prod-form-grid select{width:100%}
+@media(max-width:760px){.prod-form-grid{grid-template-columns:1fr}}
+
+
+/* CRONOGRAMA COMPACTO PARA TELA E IMPRESSÃO */
+.plan-card.compact-card{
+  padding:8px 9px;
+  margin-bottom:7px;
+}
+.product-visible-name{
+  font-weight:900;
+  font-size:12px;
+  line-height:1.15;
+  color:#1f1f1d;
+  margin:3px 0 6px;
+  word-break:break-word;
+  white-space:normal;
+}
+.prod-select{
+  font-size:10.5px;
+  padding:5px 6px;
+  height:30px;
+}
+.compact-card label{
+  margin:4px 0 2px;
+  font-size:9px;
+}
+.compact-card .qtd-line input{
+  padding:5px 6px;
+  height:30px;
+}
+.compact-card .unit{
+  padding:6px 7px;
+  min-width:34px;
+  font-size:10px;
+}
+.compact-card input[type="text"]{
+  padding:5px 6px;
+  height:30px;
+  font-size:11px;
+}
+.compact-card .tag{
+  font-size:9px;
+  padding:2px 6px;
+  margin-bottom:3px;
+}
+.compact-card .card-actions{
+  margin-top:6px;
+}
+.print-name{display:none;}
+@media print{
+  .prod-select,.compact-card label,.compact-card input,.compact-card .card-actions,.compact-card .tag{display:none!important;}
+  .print-name{display:block!important;font-weight:900;font-size:11px;line-height:1.15;margin-bottom:3px;color:#000;}
+  .plan-card.compact-card{padding:5px 6px;margin-bottom:4px;border-left:3px solid #000!important;background:#fff!important;}
+  .unit{display:inline!important;background:#fff!important;color:#000!important;padding:0!important;font-size:9px!important;}
+  .qtd-print{display:block!important;font-size:9px;color:#333;margin-top:2px;}
+  .obs-print{display:block!important;font-size:8.5px;color:#444;margin-top:1px;}
+}
+
+
+/* CRONOGRAMA FINAL - LISTA COMPACTA */
+.plan-view{background:#fff;border:1px solid var(--border);border-left:5px solid var(--verde);border-radius:12px;padding:7px 8px;margin-bottom:6px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.plan-view.doce{border-left-color:#EFA4C8;background:#FFF8FB}
+.plan-view.salgado{border-left-color:var(--laranja);background:#FFFBF2}
+.plan-view.rotisseria{border-left-color:var(--verde);background:#F7FFFB}
+.plan-title{font-size:11px;font-weight:900;line-height:1.12;color:#1f1f1d;word-break:break-word;margin-bottom:3px}
+.plan-info{font-size:10px;color:var(--muted);line-height:1.2}
+.plan-actions{display:flex;gap:5px;margin-top:5px}
+.plan-actions .btn{font-size:10px;padding:4px 6px;border-radius:7px}
+.plan-edit{background:#fff;border:1px dashed var(--border);border-radius:12px;padding:8px;margin-bottom:7px}
+.plan-edit label{display:block;font-size:9px;font-weight:900;color:var(--muted);margin:4px 0 2px;text-transform:uppercase}
+.plan-edit select,.plan-edit input{font-size:11px;padding:6px;height:30px}
+.plan-edit .qtd-line{display:flex;gap:5px;align-items:center}
+.plan-edit .unit{font-size:10px;padding:6px;min-width:32px}
+.plan-edit-actions{display:flex;gap:5px;margin-top:6px;justify-content:flex-end}
+@media print{
+  .plan-edit,.plan-actions,.add-day,.toolbar,.btn,.mobile-top,aside{display:none!important}
+  main{margin-left:0!important;padding:0!important}
+  h1{font-size:15px!important;margin-bottom:2px!important}
+  .sub{font-size:9px!important;margin-bottom:6px!important}
+  .week{display:grid!important;grid-template-columns:repeat(7,1fr)!important;gap:3px!important;overflow:visible!important}
+  .day{min-height:auto!important;padding:4px!important;border:1px solid #999!important;border-radius:6px!important;background:#fff!important}
+  .day-head{font-size:9px!important;margin-bottom:4px!important}
+  .day-head small{font-size:7px!important}
+  .day-body{max-height:none!important;overflow:visible!important}
+  .plan-view{box-shadow:none!important;background:#fff!important;border:0!important;border-left:2px solid #000!important;border-radius:0!important;padding:2px 3px!important;margin-bottom:2px!important}
+  .plan-title{font-size:7.5px!important;line-height:1.05!important;margin:0!important}
+  .plan-info{font-size:6.8px!important;line-height:1.05!important;color:#222!important}
+}
+
+
+/* PAINEL MAIS COMPACTO */
+.panel-item{padding:7px 8px!important}
+.panel-title{font-size:11.5px!important;line-height:1.12!important;word-break:break-word!important;white-space:normal!important}
+.meta{font-size:9.5px!important;line-height:1.15!important}
+.list-body{max-height:560px!important}
+
+
+/* INDICADORES DE JUSTIFICATIVA */
+.chip.just-ok strong{color:var(--laranja)}
+.chip.just-alert strong{color:var(--vermelho)}
+
+
+/* QUADRANTE DE JUSTIFICATIVAS */
+.just-quadrante{
+  margin-top:14px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+}
+.just-quadrante-head{
+  background:#fff7e8;
+  color:#854F0B;
+  padding:12px 14px;
+  font-weight:900;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid var(--border);
+}
+.just-quadrante-body{
+  padding:10px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:8px;
+}
+.just-card{
+  border:1px solid #f2cf96;
+  background:#fffaf0;
+  border-radius:12px;
+  padding:9px 10px;
+}
+.just-prod{
+  font-size:12px;
+  font-weight:900;
+  line-height:1.15;
+  margin-bottom:4px;
+  word-break:break-word;
+}
+.just-meta{
+  font-size:10px;
+  color:var(--muted);
+  line-height:1.25;
+}
+.just-empty{
+  padding:18px;
+  color:var(--muted);
+  text-align:center;
+  font-size:13px;
+}
+
+</style>
+</head>
+<body>
+<div class="mobile-top"><b>Otimiza · Produção</b><button class="hamb" onclick="toggleMenu()">☰</button></div>
+<div id="app">
+<aside id="side">
+  <div class="logo">Otimiza <span>· Produção</span></div>
+  <nav>
+    <button id="nav-painel" onclick="showPage('painel')" class="active">Painel</button>
+    <button id="nav-cronograma" onclick="showPage('cronograma')">Cronograma</button>
+    <button id="nav-config" onclick="showPage('config')">Configurações</button>
+  </nav>
+</aside>
+<main id="main"></main>
+</div>
+<script>
+const BANCO_COMPARTILHADO_URL='https://script.google.com/macros/s/AKfycbxidt8raQtHXMvjR4L0UysaLv_FNgdCRTAhC0PTXFKdr8CGpFZf54OcnM5NBRsOMXDfqQ/exec';
+const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbw8Yyw4bBEeP37VNv4DDPQNQzaDKN8l9yz68YiBopKkk1btSJOdvx4BCsOM9L3Hxwfj/exec';
+const PRODUTOS_PADRAO=[{"id": "p001", "nome": "BISCOITO AMANTEIGADOS", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p002", "nome": "BOLO SABORES", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p003", "nome": "BOLO CAKE FATIA", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p004", "nome": "BOLO MILHO", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p005", "nome": "BOLO DE POTE", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p006", "nome": "BOLO RECHEADO", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p007", "nome": "BOLO SABORES COBERTURA", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p008", "nome": "BROA DE FUBA", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p009", "nome": "CAROLINA DINIZ", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p010", "nome": "COPO DA FELICIDADE", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p011", "nome": "DOCE DE BANANA POTE", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p012", "nome": "DONUTS RECHEADO", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p013", "nome": "FATIA HUNGARA", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p014", "nome": "MIL FOLHAS", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p015", "nome": "MOUSSE COPO", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p016", "nome": "PAO DE MEL DA CASA", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p017", "nome": "PUDIM LEITE COND PEDACO", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p018", "nome": "PUDIM LEITE COND PEQUENO", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p019", "nome": "ROCAMBOLE PEDACO", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p020", "nome": "TRANCA ROSCA RECHEADA", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p021", "nome": "ROSQUINHA DOCE/CROSTOLI", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p022", "nome": "ROSQUINHA DOCE", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p023", "nome": "SALADA DE FRUTAS", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p024", "nome": "SALADA DE FRUTAS GOURMET", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p025", "nome": "SONHO", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p026", "nome": "TORRADA PCT", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p027", "nome": "TORTINHA", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p028", "nome": "BOMBA", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p029", "nome": "BOLO GELADO", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p030", "nome": "CANOLI RECHEADO", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p031", "nome": "DOCES GOURMET", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Doce"}, {"id": "p032", "nome": "SALGADOS VARIADOS", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p033", "nome": "ESFIHA ABERTA", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p034", "nome": "LANCHE X SALADA DA CASA", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p035", "nome": "LANCHE NATURAL", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p036", "nome": "PAO DE FRIOS", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p037", "nome": "PAO DE QUEIJO MINI", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p038", "nome": "MINI PIZZA", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p039", "nome": "PAO CASEIRO", "categoria": "Padaria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p040", "nome": "PIZZA SEMI PRONTA", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p041", "nome": "PIZZA PEDACO", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p042", "nome": "EMPADA", "categoria": "Padaria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Salgado"}, {"id": "p043", "nome": "BATATA RECHEADA", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p044", "nome": "CALDO DE MANDIOCA NO POTE", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p045", "nome": "CALDOS DA CASA 500ML", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p046", "nome": "CANJICA DOCE POTE 250ML", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p047", "nome": "CUSCUZ PAULISTA GRANDE", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p048", "nome": "CUSCUZ PAULISTA PEQUENO", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p049", "nome": "FEIJOADA DA CASA 500ML", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p050", "nome": "LASANHA DA CASA PRONTA", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p051", "nome": "LASANHA DA CASA", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p052", "nome": "MAIONESE POTE 250G", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p053", "nome": "MARMITEX DA CASA", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p054", "nome": "MARMITEX FIT DA CASA", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p055", "nome": "MARMITEX PROTEINA", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p056", "nome": "MOLHO DA CASA BOLONHESA 500ML", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p057", "nome": "MOLHO ESPECIAL DA CASA 500ML", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p058", "nome": "PAMONHA", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p059", "nome": "PANQUECA", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p060", "nome": "RONDELI DA CASA", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p061", "nome": "SALADA COLORIDA", "categoria": "Rotisseria", "unidade": "KG", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p062", "nome": "SALADA NO POTE M", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p063", "nome": "SALADA NO POTE P", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}, {"id": "p064", "nome": "YAKISSOBA DA CASA 300ML", "categoria": "Rotisseria", "unidade": "UN", "ativo": "Sim", "subcategoria": "Rotisseria"}];
+
+function safeJSON(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed;
+  }catch(e){
+    localStorage.removeItem(key);
+    return fallback;
+  }
+}
+function safeArray(key, fallback){
+  const v = safeJSON(key, fallback);
+  return Array.isArray(v) ? v : fallback;
+}
+function safeObject(key, fallback){
+  const v = safeJSON(key, fallback);
+  return (v && typeof v === 'object' && !Array.isArray(v)) ? v : fallback;
+}
+const DB={
+  cronograma:safeArray('cronograma', []),
+  produtos:safeArray('produtos', JSON.parse(JSON.stringify(PRODUTOS_PADRAO))),
+  formsData:safeArray('formsData', []),
+  justificativas:safeObject('justificativas', {}),
+  config:safeObject('config', {"senha":"1234","dataUrl":""})
+};
+let editandoProdutoId=null;
+let editandoCronoId=null;
+let pagina='painel', setorAtual='padaria', cronoTipo=null, semana=semanaAtual(), dataPainel=hoje();
+
+function save(){
+ localStorage.setItem('cronograma',JSON.stringify(DB.cronograma));
+ localStorage.setItem('produtos',JSON.stringify(DB.produtos));
+ localStorage.setItem('formsData',JSON.stringify(DB.formsData));
+ localStorage.setItem('config',JSON.stringify(DB.config));
+ localStorage.setItem('justificativas',JSON.stringify(DB.justificativas));
+ salvarDadosCompartilhados();
+}
+function hoje(){return new Date().toISOString().split('T')[0]}
+function semanaAtual(){let d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7));return d.toISOString().split('T')[0]}
+function inicioSemana(d){let x=new Date(d+'T00:00:00');x.setDate(x.getDate()-((x.getDay()+6)%7));return x.toISOString().split('T')[0]}
+function formatData(d){if(!d)return'';let [a,m,dd]=d.split('-');return `${dd}/${m}/${a}`}
+function normalizar(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ')}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function produto(nome){return DB.produtos.find(p=>normalizar(p.nome)===normalizar(nome))}
+function unProd(nome){return produto(nome)?.unidade||''}
+function subProd(nome){return produto(nome)?.subcategoria||produto(nome)?.categoria||''}
+function toggleMenu(){document.getElementById('side').classList.toggle('open')}
+function showPage(p){pagina=p;document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));document.getElementById('nav-'+p)?.classList.add('active');document.getElementById('side').classList.remove('open');render()}
+function render(){try{document.getElementById('main').innerHTML= pagina==='painel'?painel():pagina==='cronograma'?cronograma():config();}catch(e){document.getElementById('main').innerHTML='<h1>Erro no app</h1><p>'+e.message+'</p>';console.error(e)}}
+
+
+function justKey(item){return item.data+'|'+normalizar(item.produto)+'|'+item.categoria}
+function getJust(item){return DB.justificativas[justKey(item)]}
+function abrirJustificativa(id){
+  const item=DB.cronograma.find(x=>x.id===id);
+  if(!item){alert('Item não encontrado.');return}
+  const atual=getJust(item)||{};
+  const motivos=['Falta de matéria-prima','Falta de tempo','Equipamento com problema','Produto cancelado','Equipe reduzida','Outro'];
+  const html=`<div class="modal-bg" id="modalJust"><div class="modal-card">
+    <h2>Justificar pendência</h2>
+    <div class="sub"><b>${item.produto}</b><br>${formatData(item.data)} • ${item.categoria}</div>
+    <label style="font-size:12px;font-weight:800;color:var(--muted)">Motivo</label>
+    <select id="justMotivo">${motivos.map(m=>`<option value="${m}" ${atual.motivo===m?'selected':''}>${m}</option>`).join('')}</select>
+    <label style="font-size:12px;font-weight:800;color:var(--muted);display:block;margin-top:10px">Observação</label>
+    <input id="justObs" type="text" placeholder="Opcional" value="${atual.obs||''}">
+    <div class="modal-actions">
+      <button class="btn" onclick="fecharJustificativa()">Cancelar</button>
+      <button class="btn primary" onclick="salvarJustificativa('${id}')">Salvar justificativa</button>
+    </div>
+  </div></div>`;
+  document.body.insertAdjacentHTML('beforeend',html);
+}
+function fecharJustificativa(){document.getElementById('modalJust')?.remove()}
+function salvarJustificativa(id){
+  const item=DB.cronograma.find(x=>x.id===id);
+  if(!item)return;
+  DB.justificativas[justKey(item)]={motivo:document.getElementById('justMotivo').value,obs:document.getElementById('justObs').value,data:new Date().toISOString(),produto:item.produto};
+  save();fecharJustificativa();
+function garantirBancoUrl(){
+  if(!DB.config.dataUrl) {
+    DB.config.dataUrl=BANCO_COMPARTILHADO_URL;
+    localStorage.setItem('config',JSON.stringify(DB.config));
+  }
+}
+
+garantirBancoUrl();
+render();
+}
+
+function painel(){
+ const setor=setorAtual==='rotisseria'?{label:'Rotisseria',cat:'Rotisseria'}:{label:'Padaria',cat:'Padaria'};
+ const planejados=DB.cronograma.filter(i=>i.data===dataPainel&&i.categoria===setor.cat);
+ const forms=DB.formsData.filter(f=>f.dataProducao===dataPainel&&f.categoria===setor.cat);
+ const produzidos=planejados.filter(i=>forms.some(f=>normalizar(f.produto)===normalizar(i.produto)));
+ const pendentes=planejados.filter(i=>!forms.some(f=>normalizar(f.produto)===normalizar(i.produto)));
+ const extras=forms.filter(f=>!planejados.some(i=>normalizar(i.produto)===normalizar(f.produto)));
+ const pct=planejados.length?Math.round(produzidos.length/planejados.length*100):0;
+ const justificadas=pendentes.filter(i=>DB.justificativas && DB.justificativas[justKey(i)]).length;
+ const semJustificativa=pendentes.length-justificadas;
+ const itemPlan=(i,t)=>{const j=getJust(i);return `<div class="panel-item ${t==='pendente'?'alert':''}"><div class="panel-title">${i.produto}</div><div class="meta"><span>Planejado: ${i.quantidade||'-'} ${unProd(i.produto)||i.unidade||''}</span>${t==='produzido'?'<span>Lançado no Forms</span>':''}</div>${i.observacao?`<div class="meta" style="margin-top:4px"><span>Obs: ${i.observacao}</span></div>`:''}${j?`<div class="just-box"><b>Justificado:</b>${j.motivo}${j.obs?` — ${j.obs}`:''}</div>`:''}${t==='pendente'?`<button class="just-btn" onclick="abrirJustificativa('${i.id}')">${j?'Editar justificativa':'Justificar'}</button>`:''}</div>`};
+ const itemExtra=f=>`<div class="panel-item"><div class="panel-title">${f.produto}</div><div class="meta"><span>Produzido: ${f.quantidade||'-'} ${f.unidade||''}</span><span>Extra</span></div></div>`;
+ const lista=(tit,cls,arr,fn,vazio)=>`<div class="list-card"><div class="list-head ${cls}"><span>${tit}</span><span class="count">${arr.length}</span></div><div class="list-body">${arr.length?arr.map(fn).join(''):`<div class="empty">${vazio}</div>`}</div></div>`;
+ const quadranteJustificativas=()=>{
+   const itensJust=pendentes.filter(i=>DB.justificativas && DB.justificativas[justKey(i)]);
+   return `<div class="just-quadrante">
+     <div class="just-quadrante-head"><span>Justificativas das pendências</span><span class="count">${itensJust.length}</span></div>
+     ${itensJust.length?`<div class="just-quadrante-body">${itensJust.map(i=>{
+       const j=DB.justificativas[justKey(i)]||{};
+       return `<div class="just-card">
+         <div class="just-prod">${i.produto}</div>
+         <div class="just-meta"><b>Motivo:</b> ${j.motivo||'-'}</div>
+         ${j.obs?`<div class="just-meta"><b>Obs:</b> ${j.obs}</div>`:''}
+         <div class="just-meta"><b>Qtd planejada:</b> ${i.quantidade||'-'} ${unProd(i.produto)||i.unidade||''}</div>
+       </div>`;
+     }).join('')}</div>`:`<div class="just-empty">Nenhuma pendência justificada neste dia.</div>`}
+   </div>`;
+ };
+
+ return `<div class="panel-hero"><div><h1>Painel de Produção — ${setor.label}</h1><p>${formatData(dataPainel)} • Planejados, produzidos, pendentes e extras com nome dos produtos.</p><div class="panel-actions"><button class="btn ${setorAtual==='padaria'?'primary':''}" onclick="setorAtual='padaria';render()">Padaria</button><button class="btn ${setorAtual==='rotisseria'?'primary':''}" onclick="setorAtual='rotisseria';render()">Rotisseria</button><button class="btn" onclick="mudaDia(-1)">← Dia anterior</button><button class="btn" onclick="dataPainel=hoje();render()">Hoje</button><button class="btn" onclick="mudaDia(1)">Próximo dia →</button><button class="btn" onclick="sincronizarForms()">Sincronizar Forms</button></div></div><div class="mini"><div class="chip"><strong>${planejados.length}</strong><span>Planejados</span></div><div class="chip"><strong>${produzidos.length}</strong><span>Produzidos</span></div><div class="chip"><strong>${pendentes.length}</strong><span>Pendentes</span></div><div class="chip"><strong>${extras.length}</strong><span>Extras</span></div><div class="chip just-ok"><strong>${justificadas}</strong><span>Justificadas</span></div><div class="chip just-alert"><strong>${semJustificativa}</strong><span>Sem justificativa</span></div><div class="chip"><strong>${pct}%</strong><span>Cumprimento</span></div></div></div><div class="panel-cols">${lista('Planejados','planejados',planejados,i=>itemPlan(i,'planejado'),'Nada planejado para este dia.')}${lista('Produzidos','produzidos',produzidos,i=>itemPlan(i,'produzido'),'Nenhum planejado foi lançado ainda.')}${lista('Pendentes','pendentes',pendentes,i=>itemPlan(i,'pendente'),'Sem pendências.')}${lista('Extras','extras',extras,itemExtra,'Nenhum extra lançado.')}</div>${quadranteJustificativas()}`;
+}
+function mudaDia(n){let d=new Date(dataPainel+'T00:00:00');d.setDate(d.getDate()+n);dataPainel=d.toISOString().split('T')[0];render()}
+
+function cronograma(){
+ if(!cronoTipo)return `<h1>Cronograma</h1><div class="sub">Escolha qual cronograma deseja planejar.</div><div class="choice-grid"><div class="choice" onclick="cronoTipo='padaria';render()"><h2>🥐 Cronograma Padaria</h2><p>Mostra todos os produtos da Padaria. Doces e salgados aparecem juntos, com cores diferentes.</p></div><div class="choice" onclick="cronoTipo='rotisseria';render()"><h2>🍗 Cronograma Rotisseria</h2><p>Mostra somente os produtos da Rotisseria.</p></div></div>`;
+ const cat=cronoTipo==='rotisseria'?'Rotisseria':'Padaria', label=cronoTipo==='rotisseria'?'Rotisseria':'Padaria';
+ const ini=inicioSemana(semana), nomes=['SEG','TER','QUA','QUI','SEX','SÁB','DOM']; let dias=[];
+ for(let i=0;i<7;i++){let d=new Date(ini+'T00:00:00');d.setDate(d.getDate()+i);dias.push(d.toISOString().split('T')[0])}
+ let html=`<button class="btn" onclick="cronoTipo=null;render()">← Voltar</button><h1>Cronograma — ${label}</h1><div class="sub">${formatData(dias[0])} a ${formatData(dias[6])}</div><div class="toolbar"><button class="btn" onclick="mudaSemana(-1)">← Semana anterior</button><button class="btn" onclick="semana=semanaAtual();render()">Hoje</button><button class="btn" onclick="mudaSemana(1)">Próxima semana →</button><span class="spacer"></span><button class="btn" onclick="copiarSemanaAnterior()">Copiar semana anterior</button><button class="btn primary" onclick="window.print()">Imprimir</button></div><div class="week">`;
+ dias.forEach((dia,idx)=>{let itens=DB.cronograma.filter(i=>i.data===dia&&i.categoria===cat);html+=`<div class="day" ondragover="event.preventDefault()" ondrop="dropItem(event,'${dia}')"><div class="day-head"><span>${nomes[idx]}</span><small>${formatData(dia)}</small></div><div class="day-body">${itens.map(card).join('')}</div><button class="btn add-day" onclick="addItem('${dia}')">+ Adicionar item</button></div>`});
+ return html+'</div>';
+}
+function produtosCat(cat){return DB.produtos.filter(p=>p.ativo!=='Não'&&p.categoria===cat).sort((a,b)=>a.nome.localeCompare(b.nome))}
+function card(i){
+ let ps=produtosCat(i.categoria);
+ let sub=normalizar(subProd(i.produto));
+ let unidade=unProd(i.produto)||i.unidade||'';
+ let qtd=i.quantidade||'';
+ let obs=i.observacao||'';
+
+ if(editandoCronoId===i.id || !i.produto){
+   return `<div class="plan-edit ${sub}">
+     <label>Produto</label>
+     <select onchange="upd('${i.id}','produto',this.value)">
+       ${ps.map(p=>`<option value="${p.nome}" ${normalizar(p.nome)===normalizar(i.produto)?'selected':''}>${p.nome}</option>`).join('')}
+     </select>
+     <label>Qtd</label>
+     <div class="qtd-line">
+       <input type="number" min="0" step="0.5" value="${qtd}" onchange="upd('${i.id}','quantidade',this.value,false)">
+       <span class="unit">${unidade}</span>
+     </div>
+     <label>Obs</label>
+     <input type="text" value="${obs}" placeholder="Opcional" onchange="upd('${i.id}','observacao',this.value,false)">
+     <div class="plan-edit-actions">
+       <button class="btn primary" onclick="editandoCronoId=null;save();render()">OK</button>
+       <button class="btn danger" onclick="remItem('${i.id}')">Remover</button>
+     </div>
+   </div>`;
+ }
+
+ return `<div class="plan-view ${sub}" draggable="true" ondragstart="drag(event,'${i.id}')">
+   <div class="plan-title">${i.produto}</div>
+   <div class="plan-info">${qtd?`Qtd: ${qtd} ${unidade}`:'Qtd: —'}${obs?`<br>Obs: ${obs}`:''}</div>
+   <div class="plan-actions">
+     <button class="btn" onclick="editandoCronoId='${i.id}';render()">Editar</button>
+     <button class="btn danger" onclick="remItem('${i.id}')">Remover</button>
+   </div>
+ </div>`;
+}
+function addItem(data){
+ let cat=cronoTipo==='rotisseria'?'Rotisseria':'Padaria';
+ let p=produtosCat(cat)[0];
+ if(!p){alert('Não há produtos cadastrados.');return}
+ const id=uid();
+ DB.cronograma.push({id,data,categoria:cat,produto:p.nome,quantidade:'',observacao:'',unidade:p.unidade,status:'Planejado'});
+ editandoCronoId=id;
+ save();
+ render();
+}
+function upd(id,c,v,doRender=true){
+ let i=DB.cronograma.find(x=>x.id===id);
+ if(!i)return;
+ if(c==='produto'){
+   let p=produto(v);
+   i.produto=v;
+   if(p){i.categoria=p.categoria;i.unidade=p.unidade}
+ }else if(c==='quantidade') i.quantidade=v;
+ else i.observacao=v;
+ save();
+ if(doRender) render();
+}
+function remItem(id){if(confirm('Remover este item?')){DB.cronograma=DB.cronograma.filter(i=>i.id!==id);if(editandoCronoId===id)editandoCronoId=null;save();render()}}
+function drag(ev,id){ev.dataTransfer.setData('text/plain',id)}
+function dropItem(ev,data){let id=ev.dataTransfer.getData('text/plain');let i=DB.cronograma.find(x=>x.id===id);if(i){i.data=data;save();render()}}
+function mudaSemana(n){let d=new Date(semana+'T00:00:00');d.setDate(d.getDate()+n*7);semana=d.toISOString().split('T')[0];render()}
+function copiarSemanaAnterior(){let cat=cronoTipo==='rotisseria'?'Rotisseria':'Padaria';let ini=inicioSemana(semana);let ant=new Date(ini+'T00:00:00');ant.setDate(ant.getDate()-7);let iniAnt=ant.toISOString().split('T')[0];let fim=new Date(iniAnt+'T00:00:00');fim.setDate(fim.getDate()+6);let fimAnt=fim.toISOString().split('T')[0];let arr=DB.cronograma.filter(i=>i.categoria===cat&&i.data>=iniAnt&&i.data<=fimAnt);if(!arr.length){alert('Não há itens na semana anterior.');return}arr.forEach(i=>{let d=new Date(i.data+'T00:00:00');d.setDate(d.getDate()+7);DB.cronograma.push({...i,id:uid(),data:d.toISOString().split('T')[0]})});save();render();alert(arr.length+' itens copiados.')}
+
+function config(){
+ return `<h1>Configurações</h1><div class="config-card"><h3>Banco compartilhado</h3><p class="sub">Banco compartilhado já configurado. Assim todos enxergam o mesmo cronograma, produtos e justificativas.</p><input id="dataUrl" value="${DB.config.dataUrl||BANCO_COMPARTILHADO_URL||''}" placeholder="https://script.google.com/macros/s/.../exec"><div class="toolbar"><button class="btn primary" onclick="salvarUrlCompartilhada()">Salvar URL compartilhada</button><button class="btn" onclick="carregarDadosCompartilhados()">Atualizar dados compartilhados</button></div></div><div class="config-card"><h3>Base de produtos</h3><p class="sub">Importe CSV no formato: Produto,Categoria,Unidade. Categoria deve ser Padaria ou Rotisseria.</p><div class="toolbar"><button class="btn primary" onclick="abrirCadastroProduto()">+ Produto individual</button><button class="btn" onclick="document.getElementById('csvProdutos').click()">Importar produtos</button><button class="btn" onclick="baixarModeloProdutos()">Baixar modelo</button><button class="btn" onclick="resetProdutos()">Restaurar lista padrão</button><button class="btn danger" onclick="limparCronogramaCorrompido()">Corrigir erro do cronograma</button></div><input id="csvProdutos" type="file" accept=".csv,.txt" style="display:none" onchange="importarProdutosCSV(this)"></div><div class="config-card"><h3>Conexão Google Forms</h3><button class="btn" onclick="testarConexao()">Testar conexão</button> <button class="btn primary" onclick="sincronizarForms()">Sincronizar agora</button><div id="status" class="sub" style="margin-top:10px"></div></div><h3>Produtos cadastrados</h3><table class="table"><thead><tr><th>Produto</th><th>Categoria</th><th>Unidade</th><th></th></tr></thead><tbody>${DB.produtos.map(p=>`<tr><td><input value="${p.nome}" onchange="editProd('${p.id}','nome',this.value)"></td><td>${p.categoria}</td><td><input value="${p.unidade}" onchange="editProd('${p.id}','unidade',this.value)"></td><td><button class="btn" onclick="abrirCadastroProduto('${p.id}')">Editar</button> <button class="btn danger" onclick="delProd('${p.id}')">Excluir</button></td></tr>`).join('')}</tbody></table>`;
+}
+
+function parseCSVLine(line, sep){
+  const out=[]; let cur='', q=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch === '"'){
+      if(q && line[i+1] === '"'){ cur+='"'; i++; }
+      else q=!q;
+    } else if(ch === sep && !q){
+      out.push(cur.trim().replace(/^"|"$/g,'')); cur='';
+    } else cur += ch;
+  }
+  out.push(cur.trim().replace(/^"|"$/g,''));
+  return out;
+}
+function normalizarCategoriaImportada(cat){
+  const c=normalizar(cat);
+  if(c.includes('rotisseria')||c.includes('hortifruti')) return 'Rotisseria';
+  return 'Padaria';
+}
+function subcategoriaProduto(nome, categoria){
+  const salgados=['SALGADOS VARIADOS','ESFIHA ABERTA','LANCHE X SALADA DA CASA','LANCHE NATURAL','PAO DE FRIOS','PAO DE QUEIJO MINI','MINI PIZZA','PAO CASEIRO','PIZZA SEMI PRONTA','PIZZA PEDACO','EMPADA'];
+  if(categoria==='Rotisseria') return 'Rotisseria';
+  return salgados.includes(String(nome||'').trim().toUpperCase()) ? 'Salgado' : 'Doce';
+}
+function importarProdutosCSV(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    const txt=e.target.result;
+    let importados=0, atualizados=0, ignorados=0;
+    txt.split(/\r?\n/).forEach((line,idx)=>{
+      if(!line.trim()) return;
+      const sep=(line.split(';').length > line.split(',').length) ? ';' : ',';
+      let cols=parseCSVLine(line,sep);
+      if(cols.length<3 && cols[0] && cols[0].includes(';')) cols=cols[0].split(';').map(x=>x.trim());
+      const nome=(cols[0]||'').trim();
+      if(idx===0 && normalizar(nome).includes('produto')) return;
+      if(!nome){ignorados++; return;}
+      const categoria=normalizarCategoriaImportada(cols[1]||'Padaria');
+      const unidade=(cols[2]||'UN').trim().toUpperCase();
+      const subcategoria=subcategoriaProduto(nome,categoria);
+      const existente=DB.produtos.find(p=>normalizar(p.nome)===normalizar(nome));
+      if(existente){
+        existente.nome=nome; existente.categoria=categoria; existente.unidade=unidade; existente.subcategoria=subcategoria; existente.ativo='Sim';
+        atualizados++;
+      }else{
+        DB.produtos.push({id:uid(),nome,categoria,unidade,ativo:'Sim',subcategoria});
+        importados++;
+      }
+    });
+    save(); render();
+    alert(`${importados} produtos importados. ${atualizados} atualizados. ${ignorados} ignorados.`);
+    input.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+}
+function baixarModeloProdutos(){
+  const csv='Produto,Categoria,Unidade\nBOLO MILHO,Padaria,KG\nESFIHA ABERTA,Padaria,UN\nBATATA RECHEADA,Rotisseria,UN';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='modelo_produtos.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+function limparCronogramaCorrompido(){
+  if(!confirm('Isso limpa apenas o cronograma salvo que está corrompido. Continuar?')) return;
+  DB.cronograma=[];
+  localStorage.setItem('cronograma','[]');
+  render();
+  alert('Cronograma corrigido. Agora você pode montar novamente.');
+}
+
+
+function abrirCadastroProduto(id=null){
+  editandoProdutoId=id;
+  const p=id ? DB.produtos.find(x=>x.id===id) : null;
+  const titulo=p?'Editar produto':'Cadastrar produto';
+  const html=`<div class="modal-bg" id="modalProduto"><div class="modal-card">
+    <h2>${titulo}</h2>
+    <div class="sub">${p?'Altere as informações do produto cadastrado.':'Cadastre um produto individual para aparecer no cronograma.'}</div>
+    <div class="prod-form-grid">
+      <div><label>Produto</label><input id="novoProdNome" type="text" placeholder="Ex: BOLO MILHO" value="${p?.nome||''}"></div>
+      <div><label>Categoria</label><select id="novoProdCat"><option value="Padaria" ${p?.categoria==='Padaria'?'selected':''}>Padaria</option><option value="Rotisseria" ${p?.categoria==='Rotisseria'?'selected':''}>Rotisseria</option></select></div>
+      <div><label>Unidade</label><select id="novoProdUn">
+        ${['UN','KG','BANDEJA','POTE','ML','L'].map(u=>`<option value="${u}" ${p?.unidade===u?'selected':''}>${u}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="fecharCadastroProduto()">Cancelar</button>
+      <button class="btn primary" onclick="cadastrarProdutoIndividual()">${p?'Salvar alterações':'Salvar produto'}</button>
+    </div>
+  </div></div>`;
+  document.body.insertAdjacentHTML('beforeend',html);
+  setTimeout(()=>document.getElementById('novoProdNome')?.focus(),100);
+}
+function fecharCadastroProduto(){document.getElementById('modalProduto')?.remove();editandoProdutoId=null}
+function cadastrarProdutoIndividual(){
+  const nome=(document.getElementById('novoProdNome')?.value||'').trim().toUpperCase();
+  const categoria=document.getElementById('novoProdCat')?.value||'Padaria';
+  const unidade=document.getElementById('novoProdUn')?.value||'UN';
+  if(!nome){alert('Informe o nome do produto.');return}
+
+  if(editandoProdutoId){
+    const p=DB.produtos.find(x=>x.id===editandoProdutoId);
+    if(p){
+      p.nome=nome;
+      p.categoria=categoria;
+      p.unidade=unidade;
+      p.ativo='Sim';
+      p.subcategoria=subcategoriaProduto(nome,categoria);
+    }
+    editandoProdutoId=null;
+  }else{
+    const existente=DB.produtos.find(p=>normalizar(p.nome)===normalizar(nome));
+    if(existente){
+      if(!confirm('Esse produto já existe. Deseja atualizar categoria e unidade?')) return;
+      existente.nome=nome;
+      existente.categoria=categoria;
+      existente.unidade=unidade;
+      existente.ativo='Sim';
+      existente.subcategoria=subcategoriaProduto(nome,categoria);
+    }else{
+      DB.produtos.push({id:uid(),nome,categoria,unidade,ativo:'Sim',subcategoria:subcategoriaProduto(nome,categoria)});
+    }
+  }
+
+  save();
+  fecharCadastroProduto();
+  render();
+  alert('Produto salvo com sucesso.');
+}
+
+function editProd(id,c,v){let p=DB.produtos.find(x=>x.id===id);if(p){p[c]=v;save();render()}}
+function delProd(id){if(confirm('Excluir produto?')){DB.produtos=DB.produtos.filter(p=>p.id!==id);save();render()}}
+function resetProdutos(){if(confirm('Restaurar lista padrão?')){DB.produtos=JSON.parse(JSON.stringify(PRODUTOS_PADRAO));save();render()}}
+
+
+function categoriaPainelForms(cat){
+  const c=normalizar(cat);
+  if(c.includes('rotisseria')||c.includes('hortifruti')) return 'Rotisseria';
+  return 'Padaria';
+}
+
+
+let carregouCompartilhado=false;
+let salvandoCompartilhado=false;
+
+async function carregarDadosCompartilhados(){
+  const url=(DB.config.dataUrl||BANCO_COMPARTILHADO_URL||'').trim();
+  if(!url || carregouCompartilhado) return;
+  try{
+    const dados=await fetch(url).then(r=>r.json());
+    if(dados && dados.ok && dados.data){
+      if(Array.isArray(dados.data.cronograma)) DB.cronograma=dados.data.cronograma;
+      if(Array.isArray(dados.data.produtos)) DB.produtos=dados.data.produtos;
+      if(dados.data.justificativas && typeof dados.data.justificativas==='object') DB.justificativas=dados.data.justificativas;
+      localStorage.setItem('cronograma',JSON.stringify(DB.cronograma));
+      localStorage.setItem('produtos',JSON.stringify(DB.produtos));
+      localStorage.setItem('justificativas',JSON.stringify(DB.justificativas));
+      carregouCompartilhado=true;
+      render();
+    }
+  }catch(e){console.warn('Não foi possível carregar dados compartilhados',e);}
+}
+
+async function salvarDadosCompartilhados(){
+  const url=(DB.config.dataUrl||BANCO_COMPARTILHADO_URL||'').trim();
+  if(!url || salvandoCompartilhado) return;
+  salvandoCompartilhado=true;
+  try{
+    await fetch(url,{
+      method:'POST',
+      body:JSON.stringify({
+        cronograma:DB.cronograma,
+        produtos:DB.produtos,
+        justificativas:DB.justificativas||{},
+        atualizadoEm:new Date().toISOString()
+      })
+    });
+  }catch(e){console.warn('Não foi possível salvar dados compartilhados',e);}
+  salvandoCompartilhado=false;
+}
+
+function salvarUrlCompartilhada(){
+  const el=document.getElementById('dataUrl');
+  DB.config.dataUrl=(el?.value||BANCO_COMPARTILHADO_URL||'').trim();
+  localStorage.setItem('config',JSON.stringify(DB.config));
+  alert('URL do banco compartilhado salva. O app vai carregar os dados compartilhados agora.');
+  carregouCompartilhado=false;
+  carregarDadosCompartilhados();
+}
+
+function parseData(v){let s=String(v||'');let m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;if(s.match(/\d{4}-\d{2}-\d{2}/))return s.slice(0,10);let d=new Date(s);return isNaN(d)?'':d.toISOString().split('T')[0]}
+async function testarConexao(){let st=document.getElementById('status');if(st)st.textContent='Testando...';try{let r=await fetch(APPS_SCRIPT_URL);let j=await r.json();if(st)st.textContent=Array.isArray(j)?'Conexão OK.':'Conectou, mas retorno não é lista.'}catch(e){if(st)st.textContent='Erro: '+e.message}}
+async function sincronizarForms(){let st=document.getElementById('status');if(st)st.textContent='Sincronizando...';try{let dados=await fetch(APPS_SCRIPT_URL).then(r=>r.json());let linhas=Array.isArray(dados)?dados.slice(1):[];DB.formsData=linhas.map(row=>{let v=i=>row[i]!=null?String(row[i]).trim():'';let cat=categoriaPainelForms(v(2));let prod=v(8)||v(4)||v(5)||v(3);return {carimbo:v(0),dataProducao:parseData(v(1)),categoria:cat,produto:prod,quantidade:parseFloat(v(6).replace(',','.'))||0,unidade:'',descricao:v(9)}}).filter(f=>f.dataProducao&&f.produto);save();if(st)st.textContent='Sincronizado: '+DB.formsData.length+' registros.';render()}catch(e){if(st)st.textContent='Erro: '+e.message;alert('Erro ao sincronizar: '+e.message)}}
+render();
+setTimeout(carregarDadosCompartilhados,300);
+</script>
+</body>
+</html>
